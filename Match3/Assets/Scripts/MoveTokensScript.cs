@@ -6,6 +6,7 @@ public class MoveTokensScript : MonoBehaviour
 
     protected GameManagerScript gameManager; // A reference to the GameManagerScript component on this script's gameObject.
     protected MatchManagerScript matchManager; // A reference to the MatchManagerScript component on this script's gameObject.
+	protected RepopulateScript repopulateScript; //a reference to the repopulate script. We need this to fix the one-at-a-time vertical spawn glitch.
 
     public bool move = false; //Determines whether or not the selected tokens are moving.
 
@@ -25,6 +26,7 @@ public class MoveTokensScript : MonoBehaviour
         gameManager = GetComponent<GameManagerScript>(); //Set the gameManager variable to the GameManagerScript component on the GameObject.
         matchManager = GetComponent<MatchManagerScript>(); //Set the matchManager variable to the MatchManagerScript component on the GameObject.
         lerpPercent = 0; //Reset the lerp percentage to 0 so that tokens don't move until the right time.
+		repopulateScript = GetComponent<RepopulateScript>();
     }
 
     public virtual void Update()
@@ -53,6 +55,7 @@ public class MoveTokensScript : MonoBehaviour
     {
         move = true; //The tokens are now moving.
         lerpPercent = 0; //Reset the lerp percentage to 0 so that tokens don't move until the right time.
+		Debug.Log("Tokens are good to move!");
     }
 
     /// <summary>
@@ -180,6 +183,7 @@ public class MoveTokensScript : MonoBehaviour
             */
             gameManager.gridArray[endGridX, endGridY] = token; 
             gameManager.gridArray[startGridX, startGridY] = null;
+			repopulateScript.AddNewTokensToRepopulateGrid (); //THIS COULD ALLOW YOU TO SPAWN VERTICAL MATCH REPLACEMENTS MID-MOVE!
         }
     }
 
@@ -195,12 +199,11 @@ public class MoveTokensScript : MonoBehaviour
         {
             for (int y = 1; y < gameManager.gridHeight; y++) //...and for the height of the grid...
             {
-                if (gameManager.gridArray[x, y - 1] == null) //If we find an empty space:
+				if (gameManager.gridArray[x, y - 1] == null && (gameManager.gridArray[x,y] != null)) //If we find an empty space:
                 {
                     for (int pos = y; pos < gameManager.gridHeight; pos++) //...using the y position as a reference...
                     {
                         GameObject token = gameManager.gridArray[x, pos]; //...grab a token on top of the empty space.
-						//TODO: Grab ALL tokens on top, right?
                         if (token != null) //If the token that we've just selected is a valid token...
                         {
                             MoveTokenToEmptyPos(x, pos, x, pos - 1, token); //make it move downward.
