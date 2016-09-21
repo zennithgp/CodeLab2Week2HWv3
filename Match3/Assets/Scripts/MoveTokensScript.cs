@@ -74,7 +74,6 @@ public class MoveTokensScript : MonoBehaviour
         exchangeGridPos1 = pos1; //Set exchangeGridPos1 to the position of the first token you clicked on.
         exchangeGridPos2 = pos2; //Set exchangeGridPos2 to the position of the second token you clicked on.
 
-
         this.userSwap = reversable; //Let the game know that the tokens have been swapped.
     }
 
@@ -201,6 +200,7 @@ public class MoveTokensScript : MonoBehaviour
                     for (int pos = y; pos < gameManager.gridHeight; pos++) //...using the y position as a reference...
                     {
                         GameObject token = gameManager.gridArray[x, pos]; //...grab a token on top of the empty space.
+						//TODO: Grab ALL tokens on top, right?
                         if (token != null) //If the token that we've just selected is a valid token...
                         {
                             MoveTokenToEmptyPos(x, pos, x, pos - 1, token); //make it move downward.

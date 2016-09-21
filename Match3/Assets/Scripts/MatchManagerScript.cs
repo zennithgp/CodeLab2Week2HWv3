@@ -26,6 +26,9 @@ public class MatchManagerScript : MonoBehaviour {
 													//a space that doesn't exist
 					match = match || GridHasHorizontalMatch(x, y); //if match was ever set to true, it stays true forever
 				}
+				if(y < gameManager.gridHeight - 2){
+					match = match || GridHasVerticalMatch (x,y);
+				}
 			}
 		}
 
@@ -52,6 +55,32 @@ public class MatchManagerScript : MonoBehaviour {
 			
 			return (sr1.sprite == sr2.sprite && sr2.sprite == sr3.sprite);  //compare their sprites
 																			//to see if they're the same
+		} else {
+			return false;
+		}
+	}
+
+
+	/// <summary>
+	/// Check if there is a VERTICAL match, based on the leftmost token.
+	/// </summary>
+	/// <returns><c>true</c> there is a vertical match originating at these coordinates, 
+	/// <c>false</c> otherwise.</returns>
+	/// <param name="x">The x coordinate of the token to check.</param>
+	/// <param name="y">The y coordinate of the token to check.</param>
+	public bool GridHasVerticalMatch(int x, int y){
+		//check the token at given coordinates, the token to the right of it, and the token 2 above
+		GameObject token1 = gameManager.gridArray[x, y + 0];
+		GameObject token2 = gameManager.gridArray[x, y + 1];
+		GameObject token3 = gameManager.gridArray[x, y + 2];
+
+		if(token1 != null && token2 != null && token3 != null){ //ensure all of the token exists
+			SpriteRenderer sr1 = token1.GetComponent<SpriteRenderer>();
+			SpriteRenderer sr2 = token2.GetComponent<SpriteRenderer>();
+			SpriteRenderer sr3 = token3.GetComponent<SpriteRenderer>();
+
+			return (sr1.sprite == sr2.sprite && sr2.sprite == sr3.sprite);  //compare their sprites
+			//to see if they're the same
 		} else {
 			return false;
 		}
@@ -96,8 +125,44 @@ public class MatchManagerScript : MonoBehaviour {
 	}
 
 
-	//TODO:Make a Vertical line manager?
+	/// <summary>
+	/// Determine how far up a match extends.
+	/// </summary>
+	/// <returns>The vertical match length.</returns>
+	/// <param name="x">The x coordinate of the bottommost gameobject in the match.</param>
+	/// <param name="y">The y coordinate of the bottommost gameobject in the match.</param>
+	public int GetVerticalMatchLength(int x, int y){
+		int matchLength = 1;
 
+		GameObject first = gameManager.gridArray[x, y]; //get the gameobject at the provided coordinates
+
+		//make sure the script found a gameobject, and--if so--get its sprite
+		if(first != null){
+			SpriteRenderer sr1 = first.GetComponent<SpriteRenderer>();
+
+			//compare the gameobject's sprite to the sprite one above, two above, etc.
+			//each time the script finds a match, increment matchLength
+			//stop when it's not a match, or if the matches extend to the edge of the play area
+			for(int i = y + 1; i < gameManager.gridWidth; i++){
+				GameObject other = gameManager.gridArray[x, i];
+
+				if(other != null){
+					SpriteRenderer sr2 = other.GetComponent<SpriteRenderer>();
+
+					if(sr1.sprite == sr2.sprite){
+						matchLength++;
+					} else {
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+		}
+
+		return matchLength;
+	}
+		
 	/// <summary>
 	/// Destroys all tokens in a match of three or more
 	/// </summary>
@@ -106,6 +171,7 @@ public class MatchManagerScript : MonoBehaviour {
 		int numRemoved = 0;
 
 		//iterate across entire grid, looking for matches
+
 		//wherever a horizontal match of three or more tokens is found, destroy them
 		for(int x = 0; x < gameManager.gridWidth; x++){
 			for(int y = 0; y < gameManager.gridHeight ; y++){
@@ -120,6 +186,27 @@ public class MatchManagerScript : MonoBehaviour {
 							Destroy(token);
 
 							gameManager.gridArray[i, y] = null;
+							numRemoved++;
+						}
+					}
+				}
+			}
+		}
+
+		//now look for vertical matches
+		for(int y = 0; y < gameManager.gridHeight ; y++){
+			for(int x = 0; x < gameManager.gridWidth; x++){
+				if(y < gameManager.gridHeight - 2){
+
+					int verticalMatchLength = GetVerticalMatchLength(x, y);
+
+					if(verticalMatchLength > 2){
+
+						for(int i = y; i < y + verticalMatchLength; i++){
+							GameObject token = gameManager.gridArray[x, i]; 
+							Destroy(token);
+
+							gameManager.gridArray[x, i] = null;
 							numRemoved++;
 						}
 					}

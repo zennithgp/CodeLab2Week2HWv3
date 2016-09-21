@@ -3,6 +3,8 @@ using System.Collections;
 
 public class GameManagerScript : MonoBehaviour {
 
+	//temp please delete me
+
 	public int gridWidth = 8;
 	public int gridHeight = 8;
 	public float tokenSize = 1;
